@@ -1,0 +1,21 @@
+[tool.poetry]
+name = "realworld-flask"
+version = "0.1.0"
+description = ""
+authors = ["Michael Hegelheimer <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pydantic = "^2.5.2"
+flask = "^3.0.0"
+
+[tool.poetry.group.dev.dependencies]
+ipython = "^8.18.1"
+ipdb = "^0.13.13"
+mypy = "^1.7.1"
+ruff = "^0.1.6"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
