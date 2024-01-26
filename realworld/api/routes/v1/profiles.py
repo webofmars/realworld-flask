@@ -1,12 +1,11 @@
 from flask import Blueprint
+from realworld.api.models.profiles import SingleProfileResponse
 
-profiles_blueprint = Blueprint(
-    "profiles_endpoints", __name__, url_prefix="/profiles"
-)
+profiles_blueprint = Blueprint("profiles_endpoints", __name__, url_prefix="/profiles")
 
 
 @profiles_blueprint.route("/<string:username>", methods=["GET"])
-def get_profile(username):
+def get_profile(username) -> SingleProfileResponse:
     """
     Authentication optional.
     """
@@ -16,9 +15,9 @@ def get_profile(username):
             "username": username,
             "bio": "I am a user.",
             "image": None,
-            "following": False
+            "following": False,
         }
-   }
+    }
 
 
 @profiles_blueprint.route("/<string:username>/follow", methods=["POST"])
@@ -32,9 +31,9 @@ def follow_profile(username):
             "username": username,
             "bio": "I am a user.",
             "image": None,
-            "following": False
+            "following": False,
         }
-   }
+    }
 
 
 @profiles_blueprint.route("/<string:username>/follow", methods=["DELETE"])
@@ -48,6 +47,6 @@ def unfollow_profile(username):
             "username": username,
             "bio": "I am a user.",
             "image": None,
-            "following": False
+            "following": False,
         }
-   }
+    }
