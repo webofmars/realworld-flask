@@ -6,15 +6,19 @@ authors = ["Michael Hegelheimer <you@example.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = "^3.10"
 pydantic = "^2.5.2"
 flask = "^3.0.0"
+pyhumps = "^3.8.0"
+alembic = "^1.13.1"
 
 [tool.poetry.group.dev.dependencies]
 ipython = "^8.18.1"
 ipdb = "^0.13.13"
 mypy = "^1.7.1"
 ruff = "^0.1.6"
+pytest = "^7.4.4"
+black = "^24.1.0"
 
 [build-system]
 requires = ["poetry-core"]
