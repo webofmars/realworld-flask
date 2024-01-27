@@ -2,15 +2,17 @@ import typing as typ
 from pydantic import model_serializer
 from realworld.api.core.models import BaseCamelModel, Article, Comment, PaginationParams
 
-# 
+#
 # Data Definitions
-# 
+#
+
 
 class CreateArticleData(BaseCamelModel):
     title: str
     description: str
     body: str
     tag_list: typ.Optional[str]
+
 
 class UpdateArticleData(BaseCamelModel):
     # Note: `slug` gets updated when title is changed
@@ -19,12 +21,15 @@ class UpdateArticleData(BaseCamelModel):
     body: typ.Optional[str]
     tag_list: typ.Optional[str]
 
+
 class CreateCommentData(BaseCamelModel):
     body: str
+
 
 #
 # Request Models
 #
+
 
 # --- Query Params ---
 class GetArticlesQueryParams(PaginationParams):
@@ -32,23 +37,28 @@ class GetArticlesQueryParams(PaginationParams):
     author: typ.Optional[str] = None
     favorited: typ.Optional[bool] = None
 
+
 class GetFeedQueryParams(PaginationParams):
     pass
+
 
 # --- Post Body ---
 class CreateArticleRequest(BaseCamelModel):
     article: CreateArticleData
 
+
 class UpdateArticleRequest(BaseCamelModel):
-    article = UpdateArticleData
+    article: UpdateArticleData
+
 
 class CreateCommentRequest(BaseCamelModel):
-    comment = CreateCommentData
+    comment: CreateCommentData
 
 
 #
 # Response Models
 #
+
 
 class SingleArticleResponse(BaseCamelModel):
     article: Article

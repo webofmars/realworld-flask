@@ -4,6 +4,7 @@ from realworld.api.core.models import BaseCamelModel, User
 # Request Models
 #
 
+
 class CreateUserData(BaseCamelModel):
     username: str
     email: str
@@ -26,6 +27,7 @@ class AuthenticateUserRequest(BaseCamelModel):
 #
 # Response Models
 #
+
 
 class SingleUserResponse(BaseCamelModel):
     user: User

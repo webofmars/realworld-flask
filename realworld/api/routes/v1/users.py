@@ -16,8 +16,8 @@ users_blueprint = Blueprint(
 @users_blueprint.route("/users", methods=["POST"])
 def create_user() -> SingleUserResponse:
     # Authorization: Token jwt.token.here
-    request_model = CreateUserRequest()
-    request_model.model_validate_json(request.json)
+    data = CreateUserRequest.model_validate_json(request.json)
+    assert data
     return {
         "user": {
             "email": "user@realworld.io",
