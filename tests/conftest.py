@@ -1,5 +1,5 @@
 from pytest import fixture
-from realworld.api.app import create_app
+from realworld.app import create_app
 
 
 @fixture(scope="session")
