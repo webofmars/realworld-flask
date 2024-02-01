@@ -1,0 +1,37 @@
+version: '3'
+
+services: 
+  realworld:
+    build:
+      context: . 
+      dockerfile: ./Dockerfile
+    networks:
+      - realworld      
+    ports:
+      - 8080:8080
+    environment:
+      FLASK_APP: realworld.app
+      SHELL: /bin/bash
+      CONFIG: 
+      POSTGRES_HOST: postgres
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    depends_on:
+      - postgres
+    stdin_open: true
+    tty: true
+
+  postgres:
+    image: postgres:15
+    platform: linux/amd64
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-changeme}
+    ports:
+      - 5432:5432
+    networks:
+      - realworld
+
+networks:
+  realworld:
+    name: "realworld"
