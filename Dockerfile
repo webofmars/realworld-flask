@@ -14,15 +14,16 @@ ENV PATH="${PATH}:/root/.local/bin"
 
 WORKDIR /app
 
-# Copy only the necessary files to avoid reinstalling dependencies on code changes
 COPY pyproject.toml poetry.lock /app/
-
-# Install dependencies
 RUN poetry config virtualenvs.create false \
     && poetry install --no-dev
 
-# Copy the entire project
 COPY /realworld /app/realworld
+COPY /alembic /app/alembic
+COPY alembic.ini /app/
+COPY /scripts/entrypoint.sh /entrypoint.sh
 
-ENTRYPOINT ["/tini", "--"]
-CMD ["poetry", "run", "flask", "run", "--host=0.0.0.0", "--port=8080"]
+RUN chmod +x /entrypoint.sh
+
+# Set the entry point to the script
+ENTRYPOINT ["/entrypoint.sh"]
