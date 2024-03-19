@@ -1,4 +1,4 @@
-"""empty message
+"""Initial realworld schema and tables.
 
 Revision ID: aaddef142d08
 Revises: 

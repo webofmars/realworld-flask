@@ -2,7 +2,6 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-# Assuming you have your database URI stored in a variable
 # _ENGINE = create_engine("postgresql+psycopg2://postgres:changeme@localhost/realworld")
 _ENGINE = create_engine("postgresql+psycopg2://postgres:changeme@postgres/realworld")
 Session = sessionmaker(bind=_ENGINE)

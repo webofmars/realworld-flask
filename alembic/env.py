@@ -25,9 +25,6 @@ target_metadata = None
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
 
-# Import Configuration from 
-# from realworld import app
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
