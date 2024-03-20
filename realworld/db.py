@@ -2,13 +2,17 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from contextlib import contextmanager
 
-# _ENGINE = create_engine("postgresql+psycopg2://postgres:changeme@localhost/realworld")
+# IN CONTAINER
 _ENGINE = create_engine("postgresql+psycopg2://postgres:changeme@postgres/realworld")
+
+# OUTSIDE OF CONTAINER
+# _ENGINE = create_engine("postgresql+psycopg2://postgres:changeme@localhost/realworld")
+
 Session = sessionmaker(bind=_ENGINE)
 
 
 @contextmanager
-def create_db_transaction():
+def get_db_connection():
     """Context manager for handling database transactions."""
     session = Session()
     try:

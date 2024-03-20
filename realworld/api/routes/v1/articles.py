@@ -1,4 +1,8 @@
 from flask import Blueprint, request
+from realworld.db import get_db_connection
+from realworld.api.handlers.articles import (
+    fetch_articles
+)
 from realworld.api.models.articles import (
     GetArticlesQueryParams,
     GetFeedQueryParams,
@@ -17,36 +21,24 @@ articles_blueprint = Blueprint("articles_endpoints", __name__, url_prefix="/arti
 
 
 @articles_blueprint.route("", methods=["GET"])
-def get_articles() -> MultipleArticlesResponse:
+# def get_articles() -> MultipleArticlesResponse:
+def get_articles():
     """
     Returns most recent articles globally.
     """
 
+    params = {}
     if request.args:
         params_model = GetArticlesQueryParams(**request.args)
-        print(f"parsed: {params_model.model_dump()}")
+        params = params_model.model_dump()
+        print(f"parsed: {params}")
 
-    return {
-        "articles": [
-            {
-                "slug": "how-to-article",
-                "title": "How to Article",
-                "description": "A test article.",
-                "body": "This is just a test!",
-                "tagList": ["test", "article"],
-                "createdAt": "2023-12-14T06:31:55.398685+00:00",
-                "updatedAt": "2023-12-14T06:31:55.398685+00:00",
-                "favorited": True,
-                "favoritesCount": 1,
-                "author": {
-                    "username": "user",
-                    "bio": "I am a user.",
-                    "image": None,
-                    "following": False,
-                },
-            }
-        ]
-    }
+    # TODO: (@mhegel) handle pagination
+    with get_db_connection() as db_conn:
+        data = fetch_articles(db_conn, **params)
+
+    # order data, return data
+    return data
 
 
 @articles_blueprint.route("/feed", methods=["GET"])

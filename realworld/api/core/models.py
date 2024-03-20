@@ -12,6 +12,7 @@ class BaseCamelModel(BaseModel):
     class Config:
         alias_generator = humps.camelize
         populate_by_name = True
+        extra = "ignore"
 
 
 #
@@ -58,9 +59,9 @@ class Article(BaseCamelModel):
     title: str
     description: str
     body: str
-    tag_list: list[str]
+    # tag_list: list[str]
     created_at: str
     updated_at: str
-    favorited: bool
-    favorites_count: int
-    author: Profile
+    # favorited: bool
+    # favorites_count: int
+    # author: Profile
