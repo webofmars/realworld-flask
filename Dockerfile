@@ -1,29 +1,17 @@
 FROM python:3.10-slim-buster
 
-ARG TARGETARCH
+RUN apt-get update \
+    && apt-get install -y curl
 
-# https://github.com/krallin/tini
-ENV TINI_VERSION v0.19.0
-ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini-${TARGETARCH} /tini
+RUN pip install -U pip \
+    && pip install --no-cache pipenv \
+    && pip install --no-cache poetry
 
-RUN chmod a+x /tini \
-    && pip3 install --no-cache pipenv poetry
-
-# Set the environment variable for poetry
-ENV PATH="${PATH}:/root/.local/bin"
+COPY poetry.lock pyproject.toml /app/
 
 WORKDIR /app
 
-COPY pyproject.toml poetry.lock /app/
 RUN poetry config virtualenvs.create false \
-    && poetry install --no-dev
+    && poetry install --with dev
 
-COPY /realworld /app/realworld
-COPY /alembic /app/alembic
-COPY alembic.ini /app/
-COPY /scripts/entrypoint.sh /entrypoint.sh
-
-RUN chmod +x /entrypoint.sh
-
-# Set the entry point to the script
-ENTRYPOINT ["/entrypoint.sh"]
+ENTRYPOINT ["/bin/bash"]

@@ -10,6 +10,3 @@ else
   echo "Error: Alembic migrations failed."
   exit 1
 fi
-
-# Start the Flask Server 
-poetry run flask run --host=0.0.0.0

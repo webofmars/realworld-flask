@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+info=()
+
+
+# 
+# HELPERS
+# 
+_enter_container() {
+    if [ "$IN_DOCKER" != "true" ]; then
+        local cmd="$1"
+        shift
+
+        echo "Building Docker image..."
+        docker compose -f docker-compose.yml build
+
+        echo "Running command inside Docker container: $cmd"
+        docker compose -f docker-compose.yml run --rm \
+            --service-ports \
+            -e RUN_LOCAL=true \
+            -e IN_DOCKER=true \
+            -w /app \
+            --use-aliases realworld \
+            ./run $cmd "$@"
+    fi
+}
+
+_run_db_migrations() {
+    set -e
+    poetry run ./scripts/migrate.sh
+}
+
+
+info+=( "dev -- Enter a shell with the dev environment set up" )
+dev() {
+    if [ "$IN_DOCKER" = "true" ]; then
+        # poetry shell
+        bash
+    else
+        _enter_container "dev"
+    fi
+}
+
+info+=( "server -- Start the server" )
+server() {
+    _enter_container "server"
+    _run_db_migrations
+    poetry run flask run --host=0.0.0.0
+}
+
+info+=( "test -- Run tests" )
+test() {
+    _enter_container "test"
+    _run_db_migrations
+    poetry run python -m pytest -vv
+}
+
+# info += ( "e2e -- Run end-to-end tests" )
+# e2e() {
+#     server()
+#      TODO: check for new file at https://github.com/gothinkster/realworld/tree/main/api
+#     ./tests/e2e/run-api-test.sh
+# }
+
+info+=( "fmt -- Run black and ruff" )
+fmt() {
+    _enter_container "fmt"
+    poetry run black .
+    poetry run ruff check . --fix
+}
+
+info+=( "mypy -- Run static type checker" )
+mypy() {
+    _enter_container "mypy"
+    poetry run mypy .
+}
+
+info+=( "teardown -- Teardown the Docker environment" )
+teardown() {
+    docker compose -f docker-compose.yml down --volumes
+}
+
+info+=( "help -- List all available commands" )
+help() {
+    echo "Available commands:"
+    for cmd in "${info[@]}"; do
+        echo "  $cmd"
+    done
+}
+
+commands=( "dev" "server" "test" "fmt" "mypy" "teardown" "help" )
+
+# Entrypoint
+main() {
+    local cmd="$1"
+    shift
+
+    if [[ -z "$cmd" ]]; then
+    help
+    elif [[ " ${commands[@]} " =~ " ${cmd} " ]]; then
+        $cmd "$@"
+    else
+        echo "Unknown command: $cmd"
+        help
+        exit 1
+    fi
+}
+
+main "$@"
