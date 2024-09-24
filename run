@@ -35,6 +35,7 @@ info+=( "dev -- Enter a shell with the dev environment set up" )
 dev() {
     if [ "$IN_DOCKER" = "true" ]; then
         # poetry shell
+        _run_db_migrations
         bash
     else
         _enter_container "dev"
