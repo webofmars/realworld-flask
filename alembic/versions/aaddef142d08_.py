@@ -50,6 +50,7 @@ def upgrade() -> None:
             "updated_date", sa.DateTime(timezone=True), server_default=sa.text("now()")
         ),
         sa.PrimaryKeyConstraint("id"),
+        sa.UniqueConstraint("username"),
     )
 
     op.create_table(

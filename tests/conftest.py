@@ -5,10 +5,11 @@ from unittest.mock import patch
 from realworld.app import create_app
 from sqlalchemy import text as satext
 from datetime import datetime, timezone as tz
-from realworld.db import _ENGINE, _Session
+from realworld.api.core.db import _ENGINE, _Session
+from realworld.api.routes.v1.users.handler import hash_password
 
-
-SESSION_USER_ID = "00000000-0000-0000-0000-000000000001"
+# from realworld.api.core.auth import generate_jwt
+# from .data import SESSION_USER_ID, SESSION_USER_NAME
 
 
 ####################
@@ -51,7 +52,7 @@ def mock_db_session(mock_conn):
 
 @fixture(autouse=True)
 def mock_get_db_connection(mock_db_session):
-    with patch("realworld.db._create_db_connection") as mock_db_conn:
+    with patch("realworld.api.core.db._create_db_connection") as mock_db_conn:
         mock_db_conn.return_value = mock_db_session, mock_db_session.connection()
         yield mock_db_conn
 
@@ -67,7 +68,7 @@ def add_user(mock_db_session):
         _id=None,
         username=None,
         email=None,
-        password_hash=None,
+        password=None,
         image=None,
         bio=None,
         ts=None,
@@ -75,13 +76,15 @@ def add_user(mock_db_session):
         _id = _id or str(uuid4())
         ts = ts or datetime.now(tz.utc).isoformat()
         username = username or f"mock-user-{_id}"
+        password = password or "password"
+        image = image or None
         user = {
             "id": _id,
             "username": username,
             "email": email or f"{username}@realworld.io",
             "bio": bio or f"mock bio for {username}",
-            "image": image or "",
-            "password_hash": password_hash or "password",
+            "image": image.encode() if image else None,
+            "password_hash": hash_password(password or "password"),
             "created_date": ts,
             "updated_date": ts,
         }
@@ -90,8 +93,14 @@ def add_user(mock_db_session):
             INSERT INTO users (id, username, email, password_hash, image, bio, created_date, updated_date)
             VALUES (:id, :username, :email, :password_hash, :image, :bio, :created_date, :updated_date)
             """
-        )
-        mock_db_session.execute(stmt, user)
+        ).bindparams(**user)
+        mock_db_session.execute(stmt)
+
+        # Reset user dict before returning
+        user.pop("password_hash")
+        user["password"] = password
+        user["image"]
+
         return user
 
     return _add_user
@@ -99,7 +108,12 @@ def add_user(mock_db_session):
 
 # @fixture(scope="session")
 # def session_user(add_user):
-#     return add_user(_id=SESSION_USER_ID, username="session-user")
+#     return add_user(_id=SESSION_USER_ID, username=SESSION_USER_NAME)
+
+
+# @fixture(scope="function")
+# def session_user_token(session_user):
+#     return generate_jwt(session_user["id"])
 
 
 @fixture(scope="function")
