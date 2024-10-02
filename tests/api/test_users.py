@@ -50,8 +50,7 @@ def test_get_current_user(client, add_user):
     user = add_user()
     resp = client.post(
         "/api/users/login",
-        json=json.dumps(
-            {"user": {"email": user["email"], "password": "password"}}),
+        json=json.dumps({"user": {"email": user["email"], "password": "password"}}),
     )
     jwt = resp.json["user"]["token"]
 

@@ -56,11 +56,11 @@ def upgrade() -> None:
     op.create_table(
         "user_follows",
         sa.Column("user_id", postgresql.UUID(), nullable=False),
-        sa.Column("follows_user_id", postgresql.UUID(), nullable=False),
+        sa.Column("following_user_id", postgresql.UUID(), nullable=False),
         sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
-        sa.ForeignKeyConstraint(["follows_user_id"], ["users.id"]),
-        sa.CheckConstraint("user_id != follows_user_id"),
-        sa.PrimaryKeyConstraint("user_id", "follows_user_id"),
+        sa.ForeignKeyConstraint(["following_user_id"], ["users.id"]),
+        sa.CheckConstraint("user_id != following_user_id"),
+        sa.PrimaryKeyConstraint("user_id", "following_user_id"),
     )
 
     op.create_table(

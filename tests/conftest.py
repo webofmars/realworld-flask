@@ -118,21 +118,15 @@ def add_user(mock_db_session):
 
 @fixture(scope="function")
 def add_user_follow(mock_db_session):
-    def _add_user_follow(user_id=None, follows_user_id=None):
-        user_follow = {
-            "user_id": user_id or str(uuid4()),
-            "follows_user_id": follows_user_id or str(uuid4()),
-        }
-
+    def _add_user_follow(user_id, following_user_id):
         stmt = satext(
             """
-            INSERT INTO user_follows (user_id, follows_user_id)
-            VALUES (:user_id, :follows_user_id)
+            INSERT INTO user_follows (user_id, following_user_id)
+            VALUES (:user_id, :following_user_id)
             """
-        )
-        mock_db_session.execute(stmt, user_follow)
-
-        return user_follow
+        ).bindparams(user_id=user_id, following_user_id=following_user_id)
+        mock_db_session.execute(stmt)
+        return True
 
     return _add_user_follow
 

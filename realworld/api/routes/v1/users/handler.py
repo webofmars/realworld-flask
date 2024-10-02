@@ -42,7 +42,8 @@ def create_user(db_conn: Connection, data: RegisterUserData) -> typ.Optional[DBU
             username=result.username,
             email=result.email,
             bio=result.bio,
-            image=(bytes(result.image) if result.image else None),
+            # result.image returns a <memoryview> object
+            image=(bytes(result.image).decode() if result.image else None),
         )
     return None
 
@@ -74,7 +75,8 @@ def update_user(
             username=result.username,
             email=result.email,
             bio=result.bio,
-            image=(bytes(result.image) if result.image else None),
+            # result.image returns a <memoryview> object
+            image=(bytes(result.image).decode() if result.image else None),
         )
     return None
 
@@ -101,7 +103,8 @@ def validate_user_creds(
             username=result.username,
             email=result.email,
             bio=result.bio,
-            image=(bytes(result.image) if result.image else None),
+            # result.image returns a <memoryview> object
+            image=(bytes(result.image).decode() if result.image else None),
         )
 
     return False
@@ -123,6 +126,7 @@ def get_user(db_conn: Connection, user_id: str) -> typ.Optional[UserData]:
             username=result.username,
             email=result.email,
             bio=result.bio,
-            image=(bytes(result.image) if result.image else None),
+            # result.image returns a <memoryview> object
+            image=(bytes(result.image).decode() if result.image else None),
         )
     return None

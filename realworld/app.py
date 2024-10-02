@@ -1,8 +1,8 @@
 from flask import Flask
-from realworld.api.routes.v1.articles import articles_blueprint
-from realworld.api.routes.v1.users import users_blueprint
-from realworld.api.routes.v1.profiles import profiles_blueprint
-from realworld.api.routes.v1.tags import tags_blueprint
+from realworld.api.routes.v1.articles.routes import articles_blueprint
+from realworld.api.routes.v1.users.routes import users_blueprint
+from realworld.api.routes.v1.profiles.routes import profiles_blueprint
+from realworld.api.routes.v1.tags.routes import tags_blueprint
 
 
 def create_app() -> Flask:
