@@ -1,8 +1,7 @@
 from flask import Flask
-from realworld.api.routes.v1.articles.routes import articles_blueprint
 from realworld.api.routes.v1.users.routes import users_blueprint
 from realworld.api.routes.v1.profiles.routes import profiles_blueprint
-from realworld.api.routes.v1.tags.routes import tags_blueprint
+from realworld.api.routes.v1.articles.routes import articles_blueprint, tags_blueprint
 
 
 def create_app() -> Flask:
@@ -12,11 +11,8 @@ def create_app() -> Flask:
 
 
 def _register_blueprints(app: Flask):
+    app.register_blueprint(articles_blueprint, url_prefix="/api")
     app.register_blueprint(
-        articles_blueprint, url_prefix=f"/api{articles_blueprint.url_prefix}"
-    )
-    app.register_blueprint(
-        # no `url_prefix` because of separate `/user` and `/users` endpoints
         users_blueprint,
         url_prefix="/api",
     )

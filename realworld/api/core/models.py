@@ -78,8 +78,8 @@ class Article(BaseCamelModel):
     tag_list: list[str]
     created_at: datetime
     updated_at: datetime
-    # favorited: bool
-    # favorites_count: int
+    favorited: bool
+    favorites_count: int
     author: Profile
 
     @field_serializer("created_at", "updated_at", when_used="unless-none")
