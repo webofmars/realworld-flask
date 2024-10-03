@@ -61,6 +61,7 @@ def get_feed() -> dict:
     Authentication required, will return multiple articles created by followed users, ordered by most recent first.
     """
 
+    # TODO: cleaner decorators to handle injecting `user_id`
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
