@@ -1,4 +1,3 @@
-from random import randint
 from uuid import uuid4
 from pytest import fixture
 from unittest.mock import patch
@@ -157,13 +156,33 @@ def add_article(mock_db_session, add_user):
             "updated_date": ts,
         }
 
-        stmt = satext(
+        mock_db_session.execute(
+            satext(
+                """
+            INSERT INTO articles (id, author_user_id, slug, title, description, body, created_date, updated_date)
+            VALUES (:id, :author_user_id, :slug, :title, :description, :body, :created_date, :updated_date)
             """
-            INSERT INTO articles (id, author_user_id, slug, title, description, body, tags, created_date, updated_date)
-            VALUES (:id, :author_user_id, :slug, :title, :description, :body, :tags, :created_date, :updated_date)
-            """
+            ),
+            article,
         )
-        mock_db_session.execute(stmt, article)
+
+        if article["tags"]:
+            mock_db_session.execute(
+                satext(
+                    """
+                    WITH upserted_tags AS (
+                        INSERT INTO tags (name)
+                        VALUES (:name)
+                        ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+                        RETURNING id
+                    )
+                    INSERT INTO article_tags (article_id, tag_id)
+                    SELECT :article_id, id
+                    FROM upserted_tags
+                    """
+                ),
+                [{"name": tag, "article_id": article["id"]} for tag in article["tags"]],
+            )
 
         return article
 
@@ -220,38 +239,17 @@ def add_article_comment(mock_db_session):
     return _add_article_comment
 
 
-@fixture(scope="function")
-def add_tag(mock_db_session):
-    def _add_tag(tag=None):
-        tag = tag or f"mock-tag-{randint(0, 100)}"
-        stmt = satext(
-            """
-            INSERT INTO tags (tag)
-            VALUES (:tag)
-            """
-        )
-        mock_db_session.execute(stmt, {"tag": tag})
-        return tag
+# @fixture(scope="function")
+# def add_tag(mock_db_session):
+#     def _add_tag(tag=None):
+#         tag = tag or f"mock-tag-{randint(0, 100)}"
+#         stmt = satext(
+#             """
+#             INSERT INTO tags (tag)
+#             VALUES (:tag)
+#             """
+#         )
+#         mock_db_session.execute(stmt, {"tag": tag})
+#         return tag
 
-    return _add_tag
-
-
-@fixture(scope="function")
-def add_article_tag(mock_db_session):
-    def _add_article_tag(article_id=None, tag=None):
-        article_tag = {
-            "article_id": article_id or str(uuid4()),
-            "tag": tag or f"mock-tag-{randint(0, 100)}",
-        }
-
-        stmt = satext(
-            """
-            INSERT INTO article_tags (article_id, tag)
-            VALUES (:article_id, :tag)
-            """
-        )
-        mock_db_session.execute(stmt, article_tag)
-
-        return article_tag
-
-    return _add_article_tag
+#     return _add_tag

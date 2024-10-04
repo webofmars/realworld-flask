@@ -15,6 +15,7 @@ from realworld.api.routes.v1.articles.models import (
     MultipleCommentsResponse,
 )
 
+
 articles_blueprint = Blueprint("articles_endpoints", __name__)
 tags_blueprint = Blueprint("tags_endpoints", __name__, url_prefix="/tags")
 
@@ -41,7 +42,7 @@ def get_articles() -> dict:
         articles = articles_handler.get_articles(
             db_conn,
             curr_user_id=user_id,
-            tag_filter=request.args.get("tag"),
+            filter_tag=request.args.get("tag"),
             author_username_filter=request.args.get("author"),
             favorited_by_username_filter=request.args.get("favorited"),
             limit=int(request.args.get("limit", 20)),
@@ -82,7 +83,9 @@ def get_article(slug: str) -> dict:
     No authentication required, will return single article
     """
     with get_db_connection() as db_conn:
-        article = articles_handler.get_article_by_slug(db_conn, slug)
+        article = articles_handler.get_article_by_slug(
+            db_conn, slug, curr_user_id=get_user_id_from_token()
+        )
         if not article:
             return {"message": "Article not found"}, 404
         return article
@@ -164,9 +167,10 @@ def get_comments(slug: str) -> dict:
     """
     Authentication optional, returns multiple comments
     """
+
     with get_db_connection() as db_conn:
         does_article_exist, comments = articles_handler.get_article_comments(
-            db_conn, slug
+            db_conn, slug, curr_user_id=get_user_id_from_token()
         )
         if not does_article_exist:
             return {"message": "Article not found"}, 404
@@ -185,8 +189,7 @@ def delete_comment(slug: str, id: str) -> dict:
         return {"message": "Invalid token"}, 401
 
     with get_db_connection() as db_conn:
-        if not articles_handler.delete_article_comment(db_conn, slug, id, user_id):
-            return {"message": "Article not found"}, 404
+        articles_handler.delete_article_comment(db_conn, slug, id, user_id)
 
     return {"message": "Comment deleted"}
 

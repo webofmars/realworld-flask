@@ -118,6 +118,24 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
 
+    op.create_table(
+        "tags",
+        sa.Column(
+            "id", postgresql.UUID(), server_default=sa.text("uuid_generate_v4()")
+        ),
+        sa.Column("name", sa.Text(), nullable=False, unique=True),
+        sa.PrimaryKeyConstraint("id"),
+    )
+
+    op.create_table(
+        "article_tags",
+        sa.Column("tag_id", postgresql.UUID(), nullable=False),
+        sa.Column("article_id", postgresql.UUID(), nullable=False),
+        sa.ForeignKeyConstraint(["article_id"], ["articles.id"]),
+        sa.ForeignKeyConstraint(["tag_id"], ["tags.id"]),
+        sa.PrimaryKeyConstraint("tag_id", "article_id"),
+    )
+
 
 def downgrade() -> None:
     op.drop_table("users")

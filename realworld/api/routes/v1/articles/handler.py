@@ -19,8 +19,7 @@ from realworld.api.routes.v1.articles.models import (
 
 # return a URL-friendly article slug that likely unique
 def generate_slug(title: str) -> str:
-    title.lower().replace(" ", "-")
-    slug = re.sub(r"[^a-z0-9-_]", "", slug)
+    slug = re.sub(r"[^a-z0-9-_]", "", title.lower().replace(" ", "-"))
     return f"{slug}-{uuid4().hex[:8]}"
 
 
@@ -47,41 +46,7 @@ def _get_article_by_id(
     db_conn: Connection, article_id: int, curr_user_id: typ.Optional[str]
 ) -> typ.Optional[Article]:
     result = db_conn.execute(
-        satext(
-            """
-            SELECT
-                a.id,
-                a.slug,
-                a.title,
-                a.description,
-                a.body,
-                a.tag_list,
-                a.created_date,
-                a.updated_date,
-                u.username AS author_username,
-                u.bio AS author_bio,
-                u.image AS author_image,
-                (
-                    SELECT COUNT(*)
-                    FROM favorites f
-                    WHERE f.article_id = a.id
-                ) AS favorites_count,
-                (
-                    SELECT COUNT(*)
-                    FROM favorites f
-                    WHERE f.article_id = a.id AND f.user_id = :curr_user_id
-                ) AS favorited_by_curr_user
-                (
-                    SELECT COUNT(*)
-                    FROM user_follows uf
-                    WHERE uf.user_id = :curr_user_id
-                    AND uf.following_user_id = u.id
-                ) > 0 AS is_curr_user_following
-            FROM articles a
-            JOIN users u ON a.author_id = u.id
-            WHERE a.id = :article_id
-            """
-        ).bindparams(article_id=article_id, curr_user_id=curr_user_id)
+        _base_get_articles_query(article_id=article_id, curr_user_id=curr_user_id)
     ).fetchone()
 
     if not result:
@@ -107,6 +72,101 @@ def _get_article_by_id(
     )
 
 
+def _base_get_articles_query(
+    *,
+    article_id: typ.Optional[int] = None,
+    slug: typ.Optional[str] = None,
+    curr_user_id: typ.Optional[str] = None,
+    filter_tag: typ.Optional[str] = None,
+    author_username_filter: typ.Optional[str] = None,
+    favorited_by_username_filter: typ.Optional[str] = None,
+    curr_user_feed: typ.Optional[bool] = False,
+    limit: typ.Optional[int] = 20,
+    offset: typ.Optional[int] = 0,
+):
+
+    joins = []
+    where_clauses = []
+    params = {
+        "limit": limit,
+        "offset": offset,
+        "curr_user_id": curr_user_id,
+    }
+
+    if article_id:
+        params["article_id"] = article_id
+        where_clauses.append("a.id = :article_id")
+
+    if slug:
+        params["slug"] = slug
+        where_clauses.append("a.slug = :slug")
+
+    if filter_tag:
+        params["tag_filter"] = filter_tag
+        where_clauses.append("t.name = :tag_filter")
+
+    if author_username_filter:
+        params["author_username"] = author_username_filter
+        where_clauses.append("u.username = :author_username")
+
+    if favorited_by_username_filter:
+        params["favorited_by_username"] = favorited_by_username_filter
+        joins.append("JOIN user_favorites uf ON a.id = uf.article_id")
+        where_clauses.append("uf.username = :favorited_by_username")
+
+    if curr_user_feed and curr_user_id:
+        params["curr_user_id"] = curr_user_id
+        joins.append("JOIN user_follows uf ON a.author_user_id = uf.following_user_id")
+        where_clauses.append("uf.user_id = :curr_user_id")
+
+    where_clause = "WHERE " + " AND ".join(where_clauses) if where_clauses else ""
+
+    return satext(
+        f"""
+            SELECT
+                a.id,
+                a.slug,
+                a.title,
+                a.description,
+                a.body,
+                a.created_date,
+                a.updated_date,
+                u.username AS author_username,
+                u.bio AS author_bio,
+                u.image AS author_image,
+                (
+                    SELECT COUNT(*)
+                    FROM article_favorites f
+                    WHERE f.article_id = a.id
+                ) AS favorites_count,
+                (
+                    SELECT COUNT(*)
+                    FROM article_favorites f
+                    WHERE f.article_id = a.id AND f.user_id = :curr_user_id
+                ) AS favorited_by_curr_user,
+                (
+                    SELECT COUNT(*)
+                    FROM user_follows uf
+                    WHERE uf.user_id = :curr_user_id
+                    AND uf.following_user_id = u.id
+                ) > 0 AS is_curr_user_following,
+                (
+                    SELECT ARRAY_AGG(t.name)
+                    FROM tags t
+                    JOIN article_tags at ON t.id = at.tag_id
+                    WHERE at.article_id = a.id
+                ) AS tag_list
+            FROM articles a
+            JOIN users u ON a.author_user_id = u.id
+            {" ".join(joins)}
+            {where_clause}
+            ORDER BY a.created_date DESC
+            LIMIT :limit
+            OFFSET :offset
+        """
+    ).bindparams(**params)
+
+
 #
 # Handlers
 #
@@ -116,12 +176,44 @@ def get_articles(
     db_conn: Connection,
     *,
     curr_user_id: typ.Optional[str] = None,
-    tag_filter: typ.Optional[str] = None,
+    filter_tag: typ.Optional[str] = None,
     author_username_filter: typ.Optional[str] = None,
     favorited_by_username_filter: typ.Optional[str] = None,
     limit: typ.Optional[int] = 20,
     offset: typ.Optional[int] = 0,
-) -> typ.List[Article]: ...
+) -> typ.List[Article]:
+    articles = db_conn.execute(
+        _base_get_articles_query(
+            curr_user_id=curr_user_id,
+            filter_tag=filter_tag,
+            author_username_filter=author_username_filter,
+            favorited_by_username_filter=favorited_by_username_filter,
+            limit=limit,
+            offset=offset,
+        )
+    ).fetchall()
+
+    return [
+        Article(
+            id=article.id,
+            slug=article.slug,
+            title=article.title,
+            description=article.description,
+            body=article.body,
+            tag_list=article.tag_list if article.tag_list else [],
+            created_at=article.created_date,
+            updated_at=article.updated_date,
+            favorited=bool(article.favorited_by_curr_user),
+            favorites_count=article.favorites_count,
+            author=Profile(
+                bio=article.author_bio,
+                username=article.author_username,
+                following=bool(article.is_curr_user_following),
+                image=article.author_image.decode() if article.author_image else None,
+            ),
+        )
+        for article in articles
+    ]
 
 
 def get_feed_articles(
@@ -129,48 +221,44 @@ def get_feed_articles(
     curr_user_id: str,
     limit: typ.Optional[int] = 20,
     offset: typ.Optional[int] = 0,
-) -> typ.List[Article]: ...
+) -> typ.List[Article]:
+    articles = db_conn.execute(
+        _base_get_articles_query(
+            curr_user_id=curr_user_id,
+            curr_user_feed=True,
+            limit=limit,
+            offset=offset,
+        )
+    ).fetchall()
+
+    return [
+        Article(
+            id=article.id,
+            slug=article.slug,
+            title=article.title,
+            description=article.description,
+            body=article.body,
+            tag_list=article.tag_list if article.tag_list else [],
+            created_at=article.created_date,
+            updated_at=article.updated_date,
+            favorited=bool(article.favorited_by_curr_user),
+            favorites_count=article.favorites_count,
+            author=Profile(
+                bio=article.author_bio,
+                username=article.author_username,
+                following=bool(article.is_curr_user_following),
+                image=article.author_image.decode() if article.author_image else None,
+            ),
+        )
+        for article in articles
+    ]
 
 
 def get_article_by_slug(
     db_conn: Connection, slug: str, curr_user_id: typ.Optional[str]
 ) -> typ.Optional[Article]:
     result = db_conn.execute(
-        satext(
-            """
-            SELECT
-                a.id,
-                a.slug,
-                a.title,
-                a.description,
-                a.body,
-                a.tag_list,
-                a.created_date,
-                a.updated_date,
-                u.username AS author_username,
-                u.bio AS author_bio,
-                u.image AS author_image,
-                (
-                    SELECT COUNT(*)
-                    FROM favorites f
-                    WHERE f.article_id = a.id
-                ) AS favorites_count,
-                (
-                    SELECT COUNT(*)
-                    FROM favorites f
-                    WHERE f.article_id = a.id AND f.user_id = :curr_user_id
-                ) AS favorited_by_curr_user
-                (
-                    SELECT COUNT(*)
-                    FROM user_follows uf
-                    WHERE uf.user_id = :curr_user_id
-                    AND uf.following_user_id = u.id
-                ) > 0 AS is_curr_user_following
-            FROM articles a
-            JOIN users u ON a.author_id = u.id
-            WHERE a.slug = :slug
-            """
-        ).bindparams(slug=slug, curr_user_id=curr_user_id)
+        _base_get_articles_query(slug=slug, curr_user_id=curr_user_id)
     ).fetchone()
 
     if not result:
@@ -199,23 +287,41 @@ def get_article_by_slug(
 def create_article(
     db_conn: Connection, curr_user_id: str, data: CreateArticleData
 ) -> Article:
-    slug = generate_slug(data.title)
-    db_conn.execute(
+    article = db_conn.execute(
         satext(
             """
-            INSERT INTO articles (author_id, slug, title, description, body, tag_list)
-            VALUES (:author_id, :slug, :title, :description, :body, :tag_list)
+            INSERT INTO articles (author_user_id, slug, title, description, body)
+            VALUES (:author_user_id, :slug, :title, :description, :body)
+            RETURNING id, slug
             """
         ).bindparams(
-            author_id=curr_user_id,
-            slug=slug,
+            author_user_id=curr_user_id,
+            slug=generate_slug(data.title),
             title=data.title,
             description=data.description,
             body=data.body,
-            tag_list=data.tag_list,
         )
-    )
-    return get_article_by_slug(db_conn, slug, curr_user_id)
+    ).fetchone()
+
+    if data.tag_list:
+        db_conn.execute(
+            satext(
+                """
+                WITH upserted_tags AS (
+                    INSERT INTO tags (name)
+                    VALUES (:name)
+                    ON CONFLICT (name) DO UPDATE SET name = EXCLUDED.name
+                    RETURNING id
+                )
+                INSERT INTO article_tags (article_id, tag_id)
+                SELECT :article_id, id
+                FROM upserted_tags
+                """
+            ),
+            [{"name": tag, "article_id": article.id} for tag in data.tag_list],
+        )
+
+    return get_article_by_slug(db_conn, article.slug, curr_user_id)
 
 
 def update_article(
@@ -237,7 +343,7 @@ def update_article(
             SET {update_str}
                 updated_date = CURRENT_TIMESTAMP
             WHERE slug = :slug
-            AND author_id = :curr_user_id
+            AND author_user_id = :curr_user_id
             """
         ).bindparams(
             slug=slug,
@@ -254,7 +360,7 @@ def delete_article(db_conn: Connection, slug: str, curr_user_id: str) -> bool:
             """
             DELETE FROM articles
             WHERE slug = :slug
-            AND author_id = :curr_user_id
+            AND author_user_id = :curr_user_id
             """
         ).bindparams(slug=slug, curr_user_id=curr_user_id)
     )
@@ -273,7 +379,7 @@ def create_article_comment(
                 :curr_user_id,
                 :body
             )
-            RETURNING id, created_date
+            RETURNING id, created_date, body
             """
         ).bindparams(slug=slug, curr_user_id=curr_user_id, body=data.body)
     ).fetchone()
@@ -285,7 +391,7 @@ def create_article_comment(
         id=result.id,
         created_at=result.created_date,
         updated_at=result.created_date,
-        body=data.body,
+        body=result.body,
         author=_get_curr_profile_by_id(db_conn, curr_user_id),
     )
 
@@ -345,7 +451,7 @@ def delete_article_comment(
     db_conn: Connection, slug: str, comment_id: int, curr_user_id: str
 ) -> bool:
     """Returns (does_article_exist)"""
-    result = db_conn.execute(
+    db_conn.execute(
         satext(
             """
             DELETE FROM article_comments
@@ -388,14 +494,6 @@ def delete_article_favorite(
     return _get_article_by_id(db_conn, article_id, curr_user_id)
 
 
-# TODO: store tags in a separate table with association table
 def get_all_tags(db_conn: Connection) -> typ.List[str]:
-    result = db_conn.execute(
-        satext(
-            """
-            SELECT DISTINCT UNNEST(tag_list) AS tag
-            FROM articles
-            """
-        )
-    ).fetchall()
-    return [row.tag for row in result]
+    result = db_conn.execute(satext("SELECT * from tags")).fetchall()
+    return [tag.name for tag in result]
