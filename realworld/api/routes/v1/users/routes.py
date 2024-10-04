@@ -20,7 +20,7 @@ users_blueprint = Blueprint(
 
 @users_blueprint.route("/users", methods=["POST"])
 def create_user() -> dict:
-    data = RegisterUserRequest.model_validate_json(request.json)
+    data = RegisterUserRequest.model_validate(request.json)
 
     with get_db_connection() as db_conn:
         if not (user := users_handler.create_user(db_conn, data.user)):
@@ -39,7 +39,7 @@ def create_user() -> dict:
 
 @users_blueprint.route("/users/login", methods=["POST"])
 def authenticate_user() -> dict:
-    data = LoginUserRequest.model_validate_json(request.json)
+    data = LoginUserRequest.model_validate(request.json)
 
     with get_db_connection() as db_conn:
         if not (
@@ -76,7 +76,7 @@ def get_current_user() -> dict:
 @validate_token
 @users_blueprint.route("/user", methods=["PUT"])
 def update_user() -> dict:
-    data = UpdateUserRequest.model_validate_json(request.json)
+    data = UpdateUserRequest.model_validate(request.json)
 
     with get_db_connection() as db_conn:
         if not (

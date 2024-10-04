@@ -33,4 +33,5 @@ def get_db_connection():
         session.rollback()
         raise e
     finally:
+        session.commit()
         session.close()

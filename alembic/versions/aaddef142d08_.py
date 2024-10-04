@@ -51,6 +51,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("username"),
+        sa.UniqueConstraint("email"),
     )
 
     op.create_table(

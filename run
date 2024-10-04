@@ -56,12 +56,13 @@ test() {
     poetry run python -m pytest -vv
 }
 
-# info += ( "e2e -- Run end-to-end tests" )
-# e2e() {
-#     server()
-#      TODO: check for new file at https://github.com/gothinkster/realworld/tree/main/api
-#     ./tests/e2e/run-api-test.sh
-# }
+info+=( "e2e -- Run end-to-end tests against local api" )
+e2e() {
+    # NOTE: this requires running the api locally (./run server) from another terminal
+    # TODO: check for new file at https://github.com/gothinkster/realworld/tree/main/api
+    set -e
+    poetry run ./scripts/run-api-tests.sh
+}
 
 info+=( "fmt -- Run black and ruff" )
 fmt() {
@@ -89,7 +90,7 @@ help() {
     done
 }
 
-commands=( "dev" "server" "test" "fmt" "mypy" "teardown" "help" )
+commands=( "dev" "server" "test" "e2e" "fmt" "mypy" "teardown" "help" )
 
 # Entrypoint
 main() {

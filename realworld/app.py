@@ -12,10 +12,7 @@ def create_app() -> Flask:
 
 def _register_blueprints(app: Flask):
     app.register_blueprint(articles_blueprint, url_prefix="/api")
-    app.register_blueprint(
-        users_blueprint,
-        url_prefix="/api",
-    )
+    app.register_blueprint(users_blueprint, url_prefix="/api")
     app.register_blueprint(
         profiles_blueprint, url_prefix=f"/api{profiles_blueprint.url_prefix}"
     )

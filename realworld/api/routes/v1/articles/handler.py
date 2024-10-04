@@ -104,6 +104,8 @@ def _base_get_articles_query(
     if filter_tag:
         params["tag_filter"] = filter_tag
         where_clauses.append("t.name = :tag_filter")
+        joins.append("JOIN article_tags at ON a.id = at.article_id")
+        joins.append("JOIN tags t ON at.tag_id = t.id")
 
     if author_username_filter:
         params["author_username"] = author_username_filter
@@ -111,8 +113,9 @@ def _base_get_articles_query(
 
     if favorited_by_username_filter:
         params["favorited_by_username"] = favorited_by_username_filter
-        joins.append("JOIN user_favorites uf ON a.id = uf.article_id")
-        where_clauses.append("uf.username = :favorited_by_username")
+        joins.append("JOIN article_favorites uff ON a.id = uff.article_id")
+        joins.append("JOIN users uu ON uf.id = uff.user_id")
+        where_clauses.append("uu.username = :favorited_by_username")
 
     if curr_user_feed and curr_user_id:
         params["curr_user_id"] = curr_user_id

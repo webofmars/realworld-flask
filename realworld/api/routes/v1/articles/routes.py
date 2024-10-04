@@ -99,7 +99,7 @@ def create_article() -> dict:
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
-    data = CreateArticleRequest.model_validate_json(request.json)
+    data = CreateArticleRequest.model_validate(request.json)
     with get_db_connection() as db_conn:
         article = articles_handler.create_article(db_conn, user_id, data.article)
 
@@ -115,7 +115,7 @@ def update_article(slug) -> dict:
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
-    data = UpdateArticleRequest.model_validate_json(request.json)
+    data = UpdateArticleRequest.model_validate(request.json)
     with get_db_connection() as db_conn:
         article = articles_handler.update_article(db_conn, slug, user_id, data.article)
         if not article:
@@ -150,7 +150,7 @@ def create_comment(slug: str) -> dict:
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
-    data = CreateCommentRequest.model_validate_json(request.json)
+    data = CreateCommentRequest.model_validate(request.json)
 
     with get_db_connection() as db_conn:
         does_article_exist, comment = articles_handler.create_article_comment(
