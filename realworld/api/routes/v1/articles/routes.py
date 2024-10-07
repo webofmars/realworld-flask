@@ -88,7 +88,8 @@ def get_article(slug: str) -> dict:
         )
         if not article:
             return {"message": "Article not found"}, 404
-        return article
+
+    return SingleArticleResponse(article=article).model_dump()
 
 
 @articles_blueprint.route("/articles", methods=["POST"])
@@ -179,9 +180,9 @@ def get_comments(slug: str) -> dict:
 
 
 @articles_blueprint.route(
-    "/articles/<string:slug>/comments/<string:id>", methods=["DELETE"]
+    "/articles/<string:slug>/comments/<string:comment_id>", methods=["DELETE"]
 )
-def delete_comment(slug: str, id: str) -> dict:
+def delete_comment(slug: str, comment_id: str) -> dict:
     """
     Authentication required
     """
@@ -189,7 +190,7 @@ def delete_comment(slug: str, id: str) -> dict:
         return {"message": "Invalid token"}, 401
 
     with get_db_connection() as db_conn:
-        articles_handler.delete_article_comment(db_conn, slug, id, user_id)
+        articles_handler.delete_article_comment(db_conn, slug, comment_id, user_id)
 
     return {"message": "Comment deleted"}
 

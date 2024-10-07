@@ -92,8 +92,8 @@ def upgrade() -> None:
         "article_favorites",
         sa.Column("user_id", postgresql.UUID(), nullable=False),
         sa.Column("article_id", postgresql.UUID(), nullable=False),
-        sa.ForeignKeyConstraint(["user_id"], ["users.id"]),
-        sa.ForeignKeyConstraint(["article_id"], ["articles.id"]),
+        sa.ForeignKeyConstraint(["user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["article_id"], ["articles.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("article_id", "user_id"),
     )
 
@@ -114,8 +114,8 @@ def upgrade() -> None:
         sa.Column(
             "updated_date", sa.DateTime(timezone=True), server_default=sa.text("now()")
         ),
-        sa.ForeignKeyConstraint(["article_id"], ["articles.id"]),
-        sa.ForeignKeyConstraint(["commenter_user_id"], ["users.id"]),
+        sa.ForeignKeyConstraint(["article_id"], ["articles.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(["commenter_user_id"], ["users.id"], ondelete="CASCADE"),
         sa.PrimaryKeyConstraint("id"),
     )
 
@@ -132,7 +132,7 @@ def upgrade() -> None:
         "article_tags",
         sa.Column("tag_id", postgresql.UUID(), nullable=False),
         sa.Column("article_id", postgresql.UUID(), nullable=False),
-        sa.ForeignKeyConstraint(["article_id"], ["articles.id"]),
+        sa.ForeignKeyConstraint(["article_id"], ["articles.id"], ondelete="CASCADE"),
         sa.ForeignKeyConstraint(["tag_id"], ["tags.id"]),
         sa.PrimaryKeyConstraint("tag_id", "article_id"),
     )

@@ -11,7 +11,7 @@ class CreateArticleData(BaseCamelModel):
     title: str
     description: str
     body: str
-    tag_list: typ.Optional[str] = None
+    tag_list: typ.Optional[typ.List[str]] = None
 
 
 class CreateArticleRequest(BaseCamelModel):
@@ -20,9 +20,9 @@ class CreateArticleRequest(BaseCamelModel):
 
 # PUT /api/articles/:slug
 class UpdateArticleData(BaseCamelModel):
-    title: typ.Optional[str]
-    description: typ.Optional[str]
-    body: typ.Optional[str]
+    title: typ.Optional[str] = None
+    description: typ.Optional[str] = None
+    body: typ.Optional[str] = None
 
 
 class UpdateArticleRequest(BaseCamelModel):

@@ -38,37 +38,7 @@ def _get_curr_profile_by_id(db_conn: Connection, user_id: str) -> Profile:
         username=result.username,
         bio=result.bio,
         image=result.image.decode() if result.image else None,
-        following=None,  # NOTE: can't follow yourself
-    )
-
-
-def _get_article_by_id(
-    db_conn: Connection, article_id: int, curr_user_id: typ.Optional[str]
-) -> typ.Optional[Article]:
-    result = db_conn.execute(
-        _base_get_articles_query(article_id=article_id, curr_user_id=curr_user_id)
-    ).fetchone()
-
-    if not result:
-        return None
-
-    return Article(
-        id=result.id,
-        slug=result.slug,
-        title=result.title,
-        description=result.description,
-        body=result.body,
-        tag_list=result.tag_list,
-        created_date=result.created_date,
-        updated_date=result.updated_date,
-        favorites_count=result.favorites_count,
-        favorited_by_curr_user=bool(result.favorited_by_curr_user),
-        author=Profile(
-            bio=result.author_bio,
-            username=result.author_username,
-            following=result.is_curr_user_following,
-            image=result.author_image.decode() if result.author_image else None,
-        ),
+        following=False,  # unable to follow yourself
     )
 
 
@@ -114,7 +84,7 @@ def _base_get_articles_query(
     if favorited_by_username_filter:
         params["favorited_by_username"] = favorited_by_username_filter
         joins.append("JOIN article_favorites uff ON a.id = uff.article_id")
-        joins.append("JOIN users uu ON uf.id = uff.user_id")
+        joins.append("JOIN users uu ON uu.id = uff.user_id")
         where_clauses.append("uu.username = :favorited_by_username")
 
     if curr_user_feed and curr_user_id:
@@ -260,29 +230,29 @@ def get_feed_articles(
 def get_article_by_slug(
     db_conn: Connection, slug: str, curr_user_id: typ.Optional[str]
 ) -> typ.Optional[Article]:
-    result = db_conn.execute(
+    article = db_conn.execute(
         _base_get_articles_query(slug=slug, curr_user_id=curr_user_id)
     ).fetchone()
 
-    if not result:
+    if not article:
         return None
 
     return Article(
-        id=result.id,
-        slug=result.slug,
-        title=result.title,
-        description=result.description,
-        body=result.body,
-        tag_list=result.tag_list,
-        created_date=result.created_date,
-        updated_date=result.updated_date,
-        favorites_count=result.favorites_count,
-        favorited_by_curr_user=bool(result.favorited_by_curr_user),
+        id=article.id,
+        slug=article.slug,
+        title=article.title,
+        description=article.description,
+        body=article.body,
+        tag_list=article.tag_list if article.tag_list else [],
+        created_at=article.created_date,
+        updated_at=article.updated_date,
+        favorited=bool(article.favorited_by_curr_user),
+        favorites_count=article.favorites_count,
         author=Profile(
-            bio=result.author_bio,
-            username=result.author_username,
-            following=result.is_curr_user_following,
-            image=result.author_image.decode() if result.author_image else None,
+            bio=article.author_bio,
+            username=article.author_username,
+            following=bool(article.is_curr_user_following),
+            image=article.author_image.decode() if article.author_image else None,
         ),
     )
 
@@ -328,17 +298,23 @@ def create_article(
 
 
 def update_article(
-    db_conn: Connection, slug: str, curr_user_id: str, data: UpdateArticleData
+    db_conn: Connection, curr_slug: str, curr_user_id: str, data: UpdateArticleData
 ) -> Article:
 
     update_str = ""
     params = {}
+    new_slug = None
     for key in ("title", "description", "body"):
         if value := getattr(data, key):
+
+            if key == "title":
+                update_str += f"slug = :slug, "
+                new_slug = generate_slug(value)
+                params[key] = new_slug
+
             update_str += f"{key} = :{key}, "
             params[key] = value
 
-    slug = generate_slug(data.title)
     db_conn.execute(
         satext(
             f"""
@@ -349,11 +325,13 @@ def update_article(
             AND author_user_id = :curr_user_id
             """
         ).bindparams(
-            slug=slug,
+            slug=curr_slug,
             curr_user_id=curr_user_id,
             **params,
         )
     )
+
+    slug = new_slug if new_slug else curr_slug
     return get_article_by_slug(db_conn, slug, curr_user_id)
 
 
@@ -391,7 +369,7 @@ def create_article_comment(
         return False, None
 
     return True, Comment(
-        id=result.id,
+        id=str(result.id),
         created_at=result.created_date,
         updated_at=result.created_date,
         body=result.body,
@@ -434,7 +412,7 @@ def get_article_comments(
     for row in result:
         comments.append(
             Comment(
-                id=row.id,
+                id=str(row.id),
                 body=row.body,
                 created_at=row.created_date,
                 updated_at=row.updated_date,
@@ -442,7 +420,7 @@ def get_article_comments(
                     username=row.username,
                     bio=row.bio,
                     image=row.image.decode() if row.image else None,
-                    following=row.is_following,
+                    following=bool(row.is_following),
                 ),
             )
         )
@@ -453,7 +431,6 @@ def get_article_comments(
 def delete_article_comment(
     db_conn: Connection, slug: str, comment_id: int, curr_user_id: str
 ) -> bool:
-    """Returns (does_article_exist)"""
     db_conn.execute(
         satext(
             """
@@ -468,33 +445,39 @@ def delete_article_comment(
 
 
 def add_article_favorite(
-    db_conn: Connection, article_id: int, curr_user_id: str
+    db_conn: Connection, slug: str, curr_user_id: str
 ) -> typ.Optional[Article]:
     db_conn.execute(
         satext(
             """
             INSERT INTO article_favorites (article_id, user_id)
-            VALUES (:article_id, :user_id)
+            SELECT a.id, :user_id
+            FROM articles a
+            WHERE a.slug = :slug 
             ON CONFLICT DO NOTHING
             """
-        ).bindparams(article_id=article_id, user_id=curr_user_id)
+        ).bindparams(slug=slug, user_id=curr_user_id)
     )
-    return _get_article_by_id(db_conn, article_id, curr_user_id)
+    return get_article_by_slug(db_conn, slug, curr_user_id)
 
 
 def delete_article_favorite(
-    db_conn: Connection, article_id: int, curr_user_id: str
+    db_conn: Connection, slug: str, curr_user_id: str
 ) -> typ.Optional[Article]:
     db_conn.execute(
         satext(
             """
             DELETE FROM article_favorites
-            WHERE article_id = :article_id
-            AND user_id = :user_id
+            WHERE article_id = (
+                SELECT id
+                FROM articles
+                WHERE slug = :slug
+            )
+            AND user_id != :user_id
             """
-        ).bindparams(article_id=article_id, user_id=curr_user_id)
+        ).bindparams(slug=slug, user_id=curr_user_id)
     )
-    return _get_article_by_id(db_conn, article_id, curr_user_id)
+    return get_article_by_slug(db_conn, slug, curr_user_id)
 
 
 def get_all_tags(db_conn: Connection) -> typ.List[str]:

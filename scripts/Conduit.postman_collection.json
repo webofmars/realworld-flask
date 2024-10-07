@@ -53,8 +53,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/users",
-              "host": ["{{APIURL}}"],
-              "path": ["users"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "users"
+              ]
             }
           },
           "response": []
@@ -101,8 +105,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/users/login",
-              "host": ["{{APIURL}}"],
-              "path": ["users", "login"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
             }
           },
           "response": []
@@ -156,8 +165,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/users/login",
-              "host": ["{{APIURL}}"],
-              "path": ["users", "login"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "users",
+                "login"
+              ]
             }
           },
           "response": []
@@ -208,8 +222,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/user",
-              "host": ["{{APIURL}}"],
-              "path": ["user"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "user"
+              ]
             }
           },
           "response": []
@@ -260,8 +278,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/user",
-              "host": ["{{APIURL}}"],
-              "path": ["user"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "user"
+              ]
             }
           },
           "response": []
@@ -333,8 +355,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ]
             }
           },
           "response": []
@@ -401,8 +427,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?author=johnjacob",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "author",
@@ -475,8 +505,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?favorited={{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "favorited",
@@ -549,8 +583,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?tag=dragons",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "tag",
@@ -582,8 +620,14 @@
                   "var article = responseJSON.article || {};",
                   "",
                   "pm.test['Article has \"title\" property'] = article.hasOwnProperty('title');",
+                  "",
                   "pm.test['Article has \"slug\" property'] = article.hasOwnProperty('slug');",
-                  "pm.globals.set('slug', article.slug);",
+                  "",
+                  "if(pm.test['Article has \"slug\" property']){",
+                  "    pm.globals.set('slug', article.slug);",
+                  "}",
+                  "",
+                  "pm.test['Global variable \"slug\" has been set'] = pm.globals.get('slug') === article.slug;",
                   "",
                   "pm.test['Article has \"body\" property'] = article.hasOwnProperty('body');",
                   "pm.test['Article has \"createdAt\" property'] = article.hasOwnProperty('createdAt');",
@@ -624,8 +668,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ]
             }
           },
           "response": []
@@ -696,8 +744,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/feed",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "feed"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "feed"
+              ]
             }
           },
           "response": []
@@ -768,8 +821,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ]
             }
           },
           "response": []
@@ -840,8 +897,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ]
             }
           },
           "response": []
@@ -912,8 +973,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?author={{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "author",
@@ -990,8 +1055,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?author={{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "author",
@@ -1057,8 +1126,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}"
+              ]
             }
           },
           "response": []
@@ -1125,8 +1199,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?tag=dragons",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "tag",
@@ -1194,8 +1272,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}"
+              ]
             }
           },
           "response": []
@@ -1257,8 +1340,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/favorite",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "favorite"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "favorite"
+              ]
             }
           },
           "response": []
@@ -1322,8 +1411,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?favorited={{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "favorited",
@@ -1393,8 +1486,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles?favorited={{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles"],
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles"
+              ],
               "query": [
                 {
                   "key": "favorited",
@@ -1461,8 +1558,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/favorite",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "favorite"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "favorite"
+              ]
             }
           },
           "response": []
@@ -1483,7 +1586,12 @@
                   "var comment = responseJSON.comment || {};",
                   "",
                   "pm.test['Comment has \"id\" property'] = comment.hasOwnProperty('id');",
-                  "pm.globals.set('commentId', comment.id);",
+                  "",
+                  "if(pm.test['Comment has \"id\" property']){",
+                  "    pm.globals.set('commentId', comment.id);",
+                  "}",
+                  "",
+                  "pm.test['Global variable \"commentId\" has been set'] = pm.globals.get('commentId') === comment.id;",
                   "",
                   "pm.test['Comment has \"body\" property'] = comment.hasOwnProperty('body');",
                   "pm.test['Comment has \"createdAt\" property'] = comment.hasOwnProperty('createdAt');",
@@ -1518,8 +1626,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/comments",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "comments"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "comments"
+              ]
             }
           },
           "response": []
@@ -1580,8 +1694,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/comments",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "comments"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "comments"
+              ]
             }
           },
           "response": []
@@ -1638,8 +1758,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/comments",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "comments"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "comments"
+              ]
             }
           },
           "response": []
@@ -1668,8 +1794,15 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}/comments/{{commentId}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}", "comments", "{{commentId}}"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}",
+                "comments",
+                "{{commentId}}"
+              ]
             }
           },
           "response": []
@@ -1698,8 +1831,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/articles/{{slug}}",
-              "host": ["{{APIURL}}"],
-              "path": ["articles", "{{slug}}"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "articles",
+                "{{slug}}"
+              ]
             }
           },
           "response": []
@@ -1711,7 +1849,9 @@
           "script": {
             "id": "67853a4a-e972-4573-a295-dad12a46a9d7",
             "type": "text/javascript",
-            "exec": [""]
+            "exec": [
+              ""
+            ]
           }
         },
         {
@@ -1719,7 +1859,9 @@
           "script": {
             "id": "3057f989-15e4-484e-b8fa-a041043d0ac0",
             "type": "text/javascript",
-            "exec": [""]
+            "exec": [
+              ""
+            ]
           }
         }
       ]
@@ -1771,8 +1913,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/users",
-              "host": ["{{APIURL}}"],
-              "path": ["users"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "users"
+              ]
             }
           },
           "response": []
@@ -1830,8 +1976,13 @@
             },
             "url": {
               "raw": "{{APIURL}}/profiles/celeb_{{USERNAME}}",
-              "host": ["{{APIURL}}"],
-              "path": ["profiles", "celeb_{{USERNAME}}"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "profiles",
+                "celeb_{{USERNAME}}"
+              ]
             }
           },
           "response": []
@@ -1890,8 +2041,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/profiles/celeb_{{USERNAME}}/follow",
-              "host": ["{{APIURL}}"],
-              "path": ["profiles", "celeb_{{USERNAME}}", "follow"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "profiles",
+                "celeb_{{USERNAME}}",
+                "follow"
+              ]
             }
           },
           "response": []
@@ -1950,8 +2107,14 @@
             },
             "url": {
               "raw": "{{APIURL}}/profiles/celeb_{{USERNAME}}/follow",
-              "host": ["{{APIURL}}"],
-              "path": ["profiles", "celeb_{{USERNAME}}", "follow"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "profiles",
+                "celeb_{{USERNAME}}",
+                "follow"
+              ]
             }
           },
           "response": []
@@ -2002,8 +2165,12 @@
             },
             "url": {
               "raw": "{{APIURL}}/tags",
-              "host": ["{{APIURL}}"],
-              "path": ["tags"]
+              "host": [
+                "{{APIURL}}"
+              ],
+              "path": [
+                "tags"
+              ]
             }
           },
           "response": []

@@ -60,6 +60,7 @@ info+=( "e2e -- Run end-to-end tests against local api" )
 e2e() {
     # NOTE: this requires running the api locally (./run server) from another terminal
     # TODO: check for new file at https://github.com/gothinkster/realworld/tree/main/api
+    source .env
     set -e
     poetry run ./scripts/run-api-tests.sh
 }
