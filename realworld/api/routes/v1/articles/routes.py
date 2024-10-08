@@ -49,7 +49,10 @@ def get_articles() -> dict:
             offset=int(request.args.get("offset", 0)),
         )
 
-    return MultipleArticlesResponse(articles=articles).model_dump()
+    return MultipleArticlesResponse(
+        articles=articles,
+        articles_count=len(articles),
+    ).model_dump()
 
 
 @validate_token
@@ -74,7 +77,10 @@ def get_feed() -> dict:
             offset=int(request.args.get("offset", 0)),
         )
 
-    return MultipleArticlesResponse(articles=articles).model_dump()
+    return MultipleArticlesResponse(
+        articles=articles,
+        articles_count=len(articles),
+    ).model_dump()
 
 
 @articles_blueprint.route("/articles/<string:slug>", methods=["GET"])
@@ -170,11 +176,9 @@ def get_comments(slug: str) -> dict:
     """
 
     with get_db_connection() as db_conn:
-        does_article_exist, comments = articles_handler.get_article_comments(
+        comments = articles_handler.get_article_comments(
             db_conn, slug, curr_user_id=get_user_id_from_token()
         )
-        if not does_article_exist:
-            return {"message": "Article not found"}, 404
 
     return MultipleCommentsResponse(comments=comments).model_dump()
 

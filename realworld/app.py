@@ -1,4 +1,5 @@
 from flask import Flask
+from flask_cors import CORS
 from realworld.api.routes.v1.users.routes import users_blueprint
 from realworld.api.routes.v1.profiles.routes import profiles_blueprint
 from realworld.api.routes.v1.articles.routes import articles_blueprint, tags_blueprint
@@ -6,6 +7,7 @@ from realworld.api.routes.v1.articles.routes import articles_blueprint, tags_blu
 
 def create_app() -> Flask:
     app = Flask(__name__)
+    CORS(app)
     _register_blueprints(app)
     return app
 

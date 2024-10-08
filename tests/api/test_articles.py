@@ -5,9 +5,7 @@
 
 def test_get_articles(client, add_user, add_article):
     user = add_user()
-    articles = [
-        add_article(author_user_id=user["id"]) for _ in range(3)
-    ]
+    articles = [add_article(author_user_id=user["id"]) for _ in range(3)]
 
     resp = client.get("/api/articles")
     assert resp.status_code == 200

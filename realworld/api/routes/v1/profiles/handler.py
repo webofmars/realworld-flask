@@ -14,7 +14,7 @@ def get_profile(
             SELECT
                 username,
                 bio,
-                image,
+                image_url,
                 CASE
                     WHEN uf.following_user_id IS NOT NULL THEN TRUE ELSE FALSE
                 END AS following
@@ -35,7 +35,7 @@ def get_profile(
     return ProfileData(
         username=result.username,
         bio=result.bio,
-        image=result.image.decode() if result.image else None,
+        image=result.image_url,
         following=result.following,
     )
 

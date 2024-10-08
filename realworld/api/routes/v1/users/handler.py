@@ -30,7 +30,7 @@ def create_user(db_conn: Connection, data: RegisterUserData) -> typ.Optional[DBU
                 INSERT INTO users (username, email, password_hash)
                 VALUES (:username, :email, :password_hash)
                 ON CONFLICT (username) DO NOTHING
-                RETURNING id, username, email, bio, image, created_date, updated_date
+                RETURNING id, username, email, bio, image_url, created_date, updated_date
                 """
             ).bindparams(
                 username=data.username,
@@ -48,8 +48,7 @@ def create_user(db_conn: Connection, data: RegisterUserData) -> typ.Optional[DBU
             username=result.username,
             email=result.email,
             bio=result.bio,
-            # result.image returns a <memoryview> object
-            image=(bytes(result.image).decode() if result.image else None),
+            image=result.image_url,
         )
     return None
 
@@ -63,16 +62,16 @@ def update_user(
             UPDATE users
             SET email = :email,
                 bio = :bio,
-                image = :image,
+                image_url = :image,
                 updated_date = CURRENT_TIMESTAMP
             WHERE id = :user_id
-            RETURNING username, email, bio, image
+            RETURNING username, email, bio, image_url
             """
         ).bindparams(
             user_id=user_id,
             email=data.email,
             bio=data.bio,
-            image=(data.image.encode() if data.image else None),
+            image=data.image,
         )
     ).fetchone()
 
@@ -82,7 +81,7 @@ def update_user(
             email=result.email,
             bio=result.bio,
             # result.image returns a <memoryview> object
-            image=(bytes(result.image).decode() if result.image else None),
+            image=result.image_url,
         )
     return None
 
@@ -93,7 +92,7 @@ def validate_user_creds(
     result = db_conn.execute(
         satext(
             """
-            SELECT id, username, email, password_hash, bio, image
+            SELECT id, username, email, password_hash, bio, image_url
             FROM users
             WHERE email = :email
             """
@@ -101,7 +100,7 @@ def validate_user_creds(
     ).fetchone()
 
     if not result:
-        return False
+        return None
 
     if is_valid_password(password, result.password_hash):
         return DBUser(
@@ -109,18 +108,17 @@ def validate_user_creds(
             username=result.username,
             email=result.email,
             bio=result.bio,
-            # result.image returns a <memoryview> object
-            image=(bytes(result.image).decode() if result.image else None),
+            image=result.image_url,
         )
 
-    return False
+    return None
 
 
 def get_user(db_conn: Connection, user_id: str) -> typ.Optional[UserData]:
     result = db_conn.execute(
         satext(
             """
-            SELECT id, username, email, bio, image, created_date, updated_date
+            SELECT id, username, email, bio, image_url, created_date, updated_date
             FROM users
             WHERE id = :user_id
             """
@@ -132,7 +130,6 @@ def get_user(db_conn: Connection, user_id: str) -> typ.Optional[UserData]:
             username=result.username,
             email=result.email,
             bio=result.bio,
-            # result.image returns a <memoryview> object
-            image=(bytes(result.image).decode() if result.image else None),
+            image=result.image_url,
         )
     return None

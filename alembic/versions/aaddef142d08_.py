@@ -41,7 +41,7 @@ def upgrade() -> None:
         sa.Column("username", sa.Text()),
         sa.Column("email", sa.Text()),
         sa.Column("password_hash", sa.Text()),
-        sa.Column("image", sa.LargeBinary()),
+        sa.Column("image_url", sa.Text()),
         sa.Column("bio", sa.Text()),
         sa.Column(
             "created_date", sa.DateTime(timezone=True), server_default=sa.text("now()")
@@ -77,7 +77,6 @@ def upgrade() -> None:
         sa.Column("title", sa.Text()),
         sa.Column("description", sa.Text()),
         sa.Column("body", sa.Text()),
-        sa.Column("tags", postgresql.ARRAY(sa.String), nullable=True),
         sa.Column(
             "created_date", sa.DateTime(timezone=True), server_default=sa.text("now()")
         ),
@@ -115,7 +114,9 @@ def upgrade() -> None:
             "updated_date", sa.DateTime(timezone=True), server_default=sa.text("now()")
         ),
         sa.ForeignKeyConstraint(["article_id"], ["articles.id"], ondelete="CASCADE"),
-        sa.ForeignKeyConstraint(["commenter_user_id"], ["users.id"], ondelete="CASCADE"),
+        sa.ForeignKeyConstraint(
+            ["commenter_user_id"], ["users.id"], ondelete="CASCADE"
+        ),
         sa.PrimaryKeyConstraint("id"),
     )
 

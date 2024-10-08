@@ -5,7 +5,6 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.sql import text as satext
 from realworld.api.core.models import Article, Profile, Comment
 
-# from realworld.api.handlers.queries import get_articles_query
 from realworld.api.routes.v1.articles.models import (
     CreateArticleData,
     UpdateArticleData,
@@ -27,7 +26,7 @@ def _get_curr_profile_by_id(db_conn: Connection, user_id: str) -> Profile:
     result = db_conn.execute(
         satext(
             """
-            SELECT username, bio, image
+            SELECT username, bio, image_url
             FROM users
             WHERE id = :user_id
             """
@@ -37,7 +36,7 @@ def _get_curr_profile_by_id(db_conn: Connection, user_id: str) -> Profile:
     return Profile(
         username=result.username,
         bio=result.bio,
-        image=result.image.decode() if result.image else None,
+        image=result.image_url,
         following=False,  # unable to follow yourself
     )
 
@@ -106,7 +105,7 @@ def _base_get_articles_query(
                 a.updated_date,
                 u.username AS author_username,
                 u.bio AS author_bio,
-                u.image AS author_image,
+                u.image_url AS author_image,
                 (
                     SELECT COUNT(*)
                     FROM article_favorites f
@@ -182,7 +181,7 @@ def get_articles(
                 bio=article.author_bio,
                 username=article.author_username,
                 following=bool(article.is_curr_user_following),
-                image=article.author_image.decode() if article.author_image else None,
+                image=article.author_image,
             ),
         )
         for article in articles
@@ -220,7 +219,7 @@ def get_feed_articles(
                 bio=article.author_bio,
                 username=article.author_username,
                 following=bool(article.is_curr_user_following),
-                image=article.author_image.decode() if article.author_image else None,
+                image=article.author_image,
             ),
         )
         for article in articles
@@ -252,7 +251,7 @@ def get_article_by_slug(
             bio=article.author_bio,
             username=article.author_username,
             following=bool(article.is_curr_user_following),
-            image=article.author_image.decode() if article.author_image else None,
+            image=article.author_image,
         ),
     )
 
@@ -308,7 +307,7 @@ def update_article(
         if value := getattr(data, key):
 
             if key == "title":
-                update_str += f"slug = :slug, "
+                update_str += "slug = :slug, "
                 new_slug = generate_slug(value)
                 params[key] = new_slug
 
@@ -379,7 +378,7 @@ def create_article_comment(
 
 def get_article_comments(
     db_conn: Connection, slug: str, curr_user_id: typ.Optional[str]
-) -> typ.Tuple[bool, typ.List[Comment]]:
+) -> typ.List[Comment]:
     result = db_conn.execute(
         satext(
             """
@@ -390,7 +389,7 @@ def get_article_comments(
                 ac.updated_date,
                 u.username,
                 u.bio,
-                u.image,
+                u.image_url,
                 (
                     SELECT COUNT(*)
                     FROM user_follows uf
@@ -406,7 +405,7 @@ def get_article_comments(
     ).fetchall()
 
     if not result:
-        return False, []
+        return []
 
     comments = []
     for row in result:
@@ -419,13 +418,13 @@ def get_article_comments(
                 author=Profile(
                     username=row.username,
                     bio=row.bio,
-                    image=row.image.decode() if row.image else None,
+                    image=row.image_url,
                     following=bool(row.is_following),
                 ),
             )
         )
 
-    return True, comments
+    return comments
 
 
 def delete_article_comment(

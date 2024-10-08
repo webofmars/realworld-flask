@@ -51,6 +51,7 @@ class SingleArticleResponse(BaseCamelModel):
 
 class MultipleArticlesResponse(BaseCamelModel):
     articles: typ.List[Article]
+    articles_count: int
 
 
 class MultipleCommentsResponse(BaseCamelModel):
