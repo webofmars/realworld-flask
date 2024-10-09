@@ -27,11 +27,11 @@ def get_db_connection():
 
     try:
         yield conn
+        session.commit()
 
     except Exception as e:
         print(f"An error occurred: {e}")
         session.rollback()
         raise e
     finally:
-        session.commit()
         session.close()
