@@ -49,7 +49,7 @@ erDiagram
         TEXT body
     }
     TAGS {
-       UUID id PK
+        UUID id PK
         TEXT name
     }
     ARTICLE_TAGS {
@@ -62,6 +62,7 @@ erDiagram
         TEXT username
         TEXT password_hash
         TEXT bio
+        TEXT image_url
     }
     USER_FOLLOWS {
         UUID user_id PK
