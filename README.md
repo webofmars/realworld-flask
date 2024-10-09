@@ -131,7 +131,7 @@ See the `run` script for available commands.
 Other commands include:
 
 ```bash
-foo@bar:~$ ./run
+./run
 
 Available commands:
     dev -- Enter a shell with the dev environment set up
@@ -160,6 +160,8 @@ flask run --port 8080
 ``` -->
 
 ### Sample Snippets
+
+Once the server is running, you can interact with the API using `curl` or [Postman](https://www.postman.com).  Otherwise, you can browse [Codebase Show](https://codebase.show/projects/realworld) and find a frontend to clone and configure to interact with the API.
 
 ```sh
 curl -X POST \
