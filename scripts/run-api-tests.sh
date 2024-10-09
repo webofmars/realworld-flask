@@ -1,8 +1,13 @@
 #!/usr/bin/env bash
 
-# Run API tests using Postman collection (from https://github.com/gothinkster/realworld/tree/main/api)
-# APIURL=http://localhost:3000/api ./run-api-tests.sh
+# Check if the server is running
+if ! curl -s --head "$APIURL"/ping | grep "200 OK" > /dev/null; then
+  echo "Error: No server running at $APIURL";
+  echo "Please start the server in another terminal";
+  exit 1
+fi
 
+# Print all comands before executing
 set -x
 
 SCRIPTDIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"

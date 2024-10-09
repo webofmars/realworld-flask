@@ -1,3 +1,4 @@
+import os
 from logging.config import fileConfig
 
 from sqlalchemy import engine_from_config
@@ -24,6 +25,12 @@ target_metadata = None
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
+
+section = config.config_ini_section
+config.set_section_option(section, "PG_USER", os.environ["POSTGRES_USER"])
+config.set_section_option(section, "PG_PASSWORD", os.environ["POSTGRES_PASSWORD"])
+config.set_section_option(section, "PG_HOST", os.environ["POSTGRES_HOST"])
+config.set_section_option(section, "PG_DB", os.environ["POSTGRES_DB"])
 
 
 def run_migrations_offline() -> None:

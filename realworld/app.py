@@ -21,6 +21,9 @@ def _register_blueprints(app: Flask):
     app.register_blueprint(
         tags_blueprint, url_prefix=f"/api{tags_blueprint.url_prefix}"
     )
+    @app.route("/api/ping")
+    def ping():
+        return "pong"
 
 
 app = create_app()

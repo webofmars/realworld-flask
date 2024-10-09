@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-info=()
+
+source .env
 
 
 # 
@@ -31,6 +32,11 @@ _run_db_migrations() {
 }
 
 
+info=()
+
+#
+# Core commands
+#
 info+=( "dev -- Enter a shell with the dev environment set up" )
 dev() {
     if [ "$IN_DOCKER" = "true" ]; then
@@ -58,9 +64,7 @@ test() {
 
 info+=( "e2e -- Run end-to-end tests against local api" )
 e2e() {
-    # NOTE: this requires running the api locally (./run server) from another terminal
-    # TODO: check for new file at https://github.com/gothinkster/realworld/tree/main/api
-    source .env
+    # Run Postman collection from https://github.com/gothinkster/realworld/tree/main/api
     set -e
     poetry run ./scripts/run-api-tests.sh
 }
