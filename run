@@ -62,7 +62,7 @@ test() {
     poetry run python -m pytest -vv
 }
 
-info+=( "e2e -- Run end-to-end tests against local api" )
+info+=( "e2e -- Run end-to-end tests against local api (requires node)" )
 e2e() {
     # Run Postman collection from https://github.com/gothinkster/realworld/tree/main/api
     set -e
