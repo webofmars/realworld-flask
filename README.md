@@ -182,7 +182,7 @@ curl -X GET http://localhost:8080/api/profiles/test
 ```
 
 ```sh
-curl -X GET http://localhost:5000/api/tags
+curl -X GET http://localhost:8080/api/tags
 ```
 
 ## Third-Party Packages
