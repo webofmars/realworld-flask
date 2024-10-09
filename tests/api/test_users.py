@@ -1,6 +1,6 @@
-import json
-
-
+#
+# User Tests
+#
 def test_create_user(client):
     payload = {
         "user": {
@@ -9,7 +9,7 @@ def test_create_user(client):
             "password": "password",
         }
     }
-    resp = client.post("/api/users", json=json.dumps(payload))
+    resp = client.post("/api/users", json=payload)
     assert resp.status_code == 200
 
 
@@ -24,7 +24,7 @@ def test_create_duplicate_user_returns_400(client, add_user):
 
     add_user(username="mock-user")
 
-    resp = client.post("/api/users", json=json.dumps(payload))
+    resp = client.post("/api/users", json=payload)
     assert resp.status_code == 409
     assert resp.json["error"] == "A user with this username already exists."
 
@@ -33,9 +33,7 @@ def test_authenticate_user(client, add_user):
     user = add_user()
     resp = client.post(
         "/api/users/login",
-        json=json.dumps(
-            {"user": {"email": user["email"], "password": user["password"]}}
-        ),
+        json={"user": {"email": user["email"], "password": user["password"]}},
     )
 
     assert resp.status_code == 200
@@ -50,7 +48,7 @@ def test_get_current_user(client, add_user):
     user = add_user()
     resp = client.post(
         "/api/users/login",
-        json=json.dumps({"user": {"email": user["email"], "password": "password"}}),
+        json={"user": {"email": user["email"], "password": "password"}},
     )
     jwt = resp.json["user"]["token"]
 
@@ -73,22 +71,20 @@ def test_update_user(client, add_user):
     user = add_user(username="will-update", password="password")
     resp = client.post(
         "/api/users/login",
-        json=json.dumps({"user": {"email": user["email"], "password": "password"}}),
+        json={"user": {"email": user["email"], "password": "password"}},
     )
     jwt = resp.json["user"]["token"]
 
     resp = client.put(
         "/api/user",
         headers={"Authorization": f"Token {jwt}"},
-        json=json.dumps(
-            {
-                "user": {
-                    "email": "updated@realworld.io",
-                    "bio": "updated bio",
-                    "image": "updated image",
-                }
+        json={
+            "user": {
+                "email": "updated@realworld.io",
+                "bio": "updated bio",
+                "image": "updated image",
             }
-        ),
+        },
     )
 
     assert resp.status_code == 200

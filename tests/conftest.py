@@ -68,7 +68,7 @@ def add_user(mock_db_session):
         username=None,
         email=None,
         password=None,
-        image=None,
+        image_url=None,
         bio=None,
         ts=None,
     ):
@@ -76,20 +76,19 @@ def add_user(mock_db_session):
         ts = ts or datetime.now(tz.utc).isoformat()
         username = username or f"mock-user-{_id}"
         password = password or "password"
-        image = image or None
         user = {
             "id": _id,
             "username": username,
             "email": email or f"{username}@realworld.io",
             "bio": bio or f"mock bio for {username}",
-            "image": image.encode() if image else None,
+            "image": image_url or None,
             "password_hash": hash_password(password or "password"),
             "created_date": ts,
             "updated_date": ts,
         }
         stmt = satext(
             """
-            INSERT INTO users (id, username, email, password_hash, image, bio, created_date, updated_date)
+            INSERT INTO users (id, username, email, password_hash, image_url, bio, created_date, updated_date)
             VALUES (:id, :username, :email, :password_hash, :image, :bio, :created_date, :updated_date)
             """
         ).bindparams(**user)
@@ -98,8 +97,6 @@ def add_user(mock_db_session):
         # Reset user dict before returning
         user.pop("password_hash")
         user["password"] = password
-        user["image"]
-
         return user
 
     return _add_user
@@ -146,7 +143,7 @@ def add_article(mock_db_session, add_user):
         ts = ts or datetime.now(tz.utc).isoformat()
         article = {
             "id": _id,
-            "author_user_id": author_user_id or add_user(),
+            "author_user_id": author_user_id or add_user()["id"],
             "slug": slug or f"mock-slug-{_id}",
             "title": title or f"Mock Title ({_id})",
             "description": description or f"Mock description of `Mock Title ({_id})`",
@@ -159,9 +156,9 @@ def add_article(mock_db_session, add_user):
         mock_db_session.execute(
             satext(
                 """
-            INSERT INTO articles (id, author_user_id, slug, title, description, body, created_date, updated_date)
-            VALUES (:id, :author_user_id, :slug, :title, :description, :body, :created_date, :updated_date)
-            """
+                INSERT INTO articles (id, author_user_id, slug, title, description, body, created_date, updated_date)
+                VALUES (:id, :author_user_id, :slug, :title, :description, :body, :created_date, :updated_date)
+                """
             ),
             article,
         )
@@ -211,16 +208,17 @@ def add_article_favorite(mock_db_session):
 
 
 @fixture(scope="function")
-def add_article_comment(mock_db_session):
+def add_article_comment(mock_db_session, add_user, add_article):
     def _add_article_comment(
         _id=None, article_id=None, commenter_user_id=None, body=None, ts=None
     ):
         _id = _id or str(uuid4())
         ts = ts or datetime.now(tz.utc).isoformat()
+        article_id = article_id or add_article()["id"]
         article_comment = {
             "id": _id,
-            "article_id": article_id or str(uuid4()),
-            "commenter_user_id": commenter_user_id or str(uuid4()),
+            "article_id": article_id,
+            "commenter_user_id": commenter_user_id or add_user()["id"],
             "body": body or f"Mock comment body for article {article_id}",
             "created_date": ts,
             "updated_date": ts,

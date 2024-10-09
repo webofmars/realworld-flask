@@ -50,14 +50,9 @@ class Comment(BaseCamelModel):
     body: str
     author: Profile
 
-
-# TODO: complete conversion to DB models
-# class User(BaseCamelModel):
-#     email: str
-#     username: str
-#     password: typ.Optional[str] = None
-#     bio: typ.Optional[str]
-#     image: typ.Optional[str]  # str or link
+    @field_serializer("created_at", "updated_at", when_used="unless-none")
+    def serialize_datetime(self, value: datetime, info):
+        return value.isoformat()
 
 
 class DBUser(BaseCamelModel):

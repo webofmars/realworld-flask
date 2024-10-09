@@ -307,9 +307,9 @@ def update_article(
         if value := getattr(data, key):
 
             if key == "title":
-                update_str += "slug = :slug, "
+                update_str += "slug = :new_slug, "
                 new_slug = generate_slug(value)
-                params[key] = new_slug
+                params["new_slug"] = new_slug
 
             update_str += f"{key} = :{key}, "
             params[key] = value
@@ -472,7 +472,7 @@ def delete_article_favorite(
                 FROM articles
                 WHERE slug = :slug
             )
-            AND user_id != :user_id
+            AND user_id = :user_id
             """
         ).bindparams(slug=slug, user_id=curr_user_id)
     )

@@ -22,7 +22,6 @@ def is_valid_password(password: str, hashed_password: str) -> bool:
 
 
 def create_user(db_conn: Connection, data: RegisterUserData) -> typ.Optional[DBUser]:
-
     try:
         result = db_conn.execute(
             satext(
@@ -80,7 +79,6 @@ def update_user(
             username=result.username,
             email=result.email,
             bio=result.bio,
-            # result.image returns a <memoryview> object
             image=result.image_url,
         )
     return None

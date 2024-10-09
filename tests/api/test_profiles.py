@@ -2,6 +2,9 @@ from pytest import mark
 from realworld.api.core.auth import generate_jwt
 
 
+#
+# Profile Tests
+#
 def test_get_profile_dne_returns_404(client):
     usr = "mock-user"
     resp = client.get(f"/api/profiles/{usr}")
