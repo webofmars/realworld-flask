@@ -26,9 +26,32 @@ _enter_container() {
     fi
 }
 
+_wait_for_db() {
+  echo "Wait for PostgreSQL to accept connections..."
+  for i in {1..30}; do
+    pg_isready -h "$POSTGRES_HOST" -p "$POSTGRES_PORT" -U "$POSTGRES_USER"
+    if [ $? -eq 0 ]; then
+      echo "DB is ready!"
+      break
+    fi
+    echo "DB not ready to accept connections. Waiting..."
+    sleep 1
+  done
+}
+
 _run_db_migrations() {
     set -e
-    poetry run ./scripts/migrate.sh
+
+    # Run Alembic migrations
+    alembic upgrade head
+
+    # Check the exit status of the Alembic command
+    if [ $? -eq 0 ]; then
+        echo "Alembic migrations succeeded."
+    else
+        echo "Error: Alembic migrations failed."
+        exit 1
+    fi
 }
 
 
@@ -39,25 +62,34 @@ info=()
 #
 info+=( "dev -- Enter a shell with the dev environment set up" )
 dev() {
-    if [ "$IN_DOCKER" = "true" ]; then
-        # poetry shell
-        _run_db_migrations
-        bash
-    else
-        _enter_container "dev"
-    fi
+    _enter_container "_dev"
+}
+
+_dev(){
+    set -e
+    _wait_for_db
+    _run_db_migrations
+    bash
 }
 
 info+=( "server -- Start the server" )
 server() {
-    _enter_container "server"
+    _enter_container "_server"
+}
+
+_server() {
+    _wait_for_db
     _run_db_migrations
     poetry run flask run --host=0.0.0.0
 }
 
 info+=( "test -- Run tests" )
 test() {
-    _enter_container "test"
+    _enter_container "_test"
+}
+
+_test() {
+    _wait_for_db
     _run_db_migrations
     poetry run python -m pytest -vv
 }
@@ -95,7 +127,7 @@ help() {
     done
 }
 
-commands=( "dev" "server" "test" "e2e" "fmt" "mypy" "teardown" "help" )
+commands=( "dev" "_dev" "server" "_server" "test" "_test" "e2e" "fmt" "mypy" "teardown" "help" )
 
 # Entrypoint
 main() {
