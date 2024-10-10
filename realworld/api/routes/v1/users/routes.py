@@ -21,7 +21,6 @@ users_blueprint = Blueprint(
 @users_blueprint.route("/users", methods=["POST"])
 def create_user() -> dict:
     data = RegisterUserRequest.model_validate(request.json)
-
     with get_db_connection() as db_conn:
         if not (user := users_handler.create_user(db_conn, data.user)):
             return {"error": "A user with this username already exists."}, 409
@@ -40,7 +39,6 @@ def create_user() -> dict:
 @users_blueprint.route("/users/login", methods=["POST"])
 def authenticate_user() -> dict:
     data = LoginUserRequest.model_validate(request.json)
-
     with get_db_connection() as db_conn:
         if not (
             user := users_handler.validate_user_creds(
@@ -77,7 +75,6 @@ def get_current_user() -> dict:
 @users_blueprint.route("/user", methods=["PUT"])
 def update_user() -> dict:
     data = UpdateUserRequest.model_validate(request.json)
-
     with get_db_connection() as db_conn:
         if not (
             user := users_handler.update_user(

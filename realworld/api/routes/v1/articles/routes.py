@@ -24,19 +24,7 @@ tags_blueprint = Blueprint("tags_endpoints", __name__, url_prefix="/tags")
 def get_articles() -> dict:
     """
     Returns most recent articles globally by default, provide tag, author or favorited query parameter to filter results
-
-    Query Parameters:
-    Filter by tag: ?tag=AngularJS
-    Filter by author: ?author=jake
-    Favorited by user: ?favorited=jake
-    Limit number of articles (default is 20): ?limit=20
-    Offset/skip number of articles (default is 0): ?offset=0
-
-    Authentication optional, will return multiple articles, ordered by most recent first
     """
-
-    # TODO: validate query parameters via pydantic
-
     user_id = get_user_id_from_token()
     with get_db_connection() as db_conn:
         articles = articles_handler.get_articles(
@@ -59,13 +47,8 @@ def get_articles() -> dict:
 @articles_blueprint.route("/articles/feed", methods=["GET"])
 def get_feed() -> dict:
     """
-    Limit number of articles (default is 20): ?limit=20
-    Offset/skip number of articles (default is 0): ?offset=0
-    Can also take limit and offset query parameters like List Articles
-    Authentication required, will return multiple articles created by followed users, ordered by most recent first.
+    Returns articles created by followed users, ordered by most recent first.
     """
-
-    # TODO: cleaner decorators to handle injecting `user_id`
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -85,9 +68,6 @@ def get_feed() -> dict:
 
 @articles_blueprint.route("/articles/<string:slug>", methods=["GET"])
 def get_article(slug: str) -> dict:
-    """
-    No authentication required, will return single article
-    """
     with get_db_connection() as db_conn:
         article = articles_handler.get_article_by_slug(
             db_conn, slug, curr_user_id=get_user_id_from_token()
@@ -100,9 +80,6 @@ def get_article(slug: str) -> dict:
 
 @articles_blueprint.route("/articles", methods=["POST"])
 def create_article() -> dict:
-    """
-    Authentication required, will return an Article
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -115,10 +92,6 @@ def create_article() -> dict:
 
 @articles_blueprint.route("/articles/<string:slug>", methods=["PUT"])
 def update_article(slug) -> dict:
-    """
-    Authentication required, will return an Article
-    """
-
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -133,9 +106,6 @@ def update_article(slug) -> dict:
 
 @articles_blueprint.route("/articles/<string:slug>", methods=["DELETE"])
 def delete_article(slug: str) -> dict:
-    """
-    Authentication required
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -151,9 +121,6 @@ def delete_article(slug: str) -> dict:
 #
 @articles_blueprint.route("/articles/<string:slug>/comments", methods=["POST"])
 def create_comment(slug: str) -> dict:
-    """
-    Authentication required, returns the created Comment
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -171,10 +138,6 @@ def create_comment(slug: str) -> dict:
 
 @articles_blueprint.route("/articles/<string:slug>/comments", methods=["GET"])
 def get_comments(slug: str) -> dict:
-    """
-    Authentication optional, returns multiple comments
-    """
-
     with get_db_connection() as db_conn:
         comments = articles_handler.get_article_comments(
             db_conn, slug, curr_user_id=get_user_id_from_token()
@@ -187,9 +150,6 @@ def get_comments(slug: str) -> dict:
     "/articles/<string:slug>/comments/<string:comment_id>", methods=["DELETE"]
 )
 def delete_comment(slug: str, comment_id: str) -> dict:
-    """
-    Authentication required
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -204,9 +164,6 @@ def delete_comment(slug: str, comment_id: str) -> dict:
 #
 @articles_blueprint.route("/articles/<string:slug>/favorite", methods=["POST"])
 def favorite_article(slug: str) -> dict:
-    """
-    Authentication required, returns the Article
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
@@ -220,9 +177,6 @@ def favorite_article(slug: str) -> dict:
 
 @articles_blueprint.route("/articles/<string:slug>/favorite", methods=["DELETE"])
 def unfavorite_article(slug: str) -> dict:
-    """
-    Authentication required, returns the Article
-    """
     if not (user_id := get_user_id_from_token()):
         return {"message": "Invalid token"}, 401
 
