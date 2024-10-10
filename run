@@ -103,14 +103,20 @@ e2e() {
 
 info+=( "fmt -- Run black and ruff" )
 fmt() {
-    _enter_container "fmt"
+    _enter_container "_fmt"
+}
+
+_fmt() {
     poetry run black .
     poetry run ruff check . --fix
 }
 
 info+=( "mypy -- Run static type checker" )
 mypy() {
-    _enter_container "mypy"
+    _enter_container "_mypy"
+}
+
+_mypy() {
     poetry run mypy .
 }
 
@@ -127,7 +133,7 @@ help() {
     done
 }
 
-commands=( "dev" "_dev" "server" "_server" "test" "_test" "e2e" "fmt" "mypy" "teardown" "help" )
+commands=( "dev" "_dev" "server" "_server" "test" "_test" "e2e" "fmt" "_fmt" "mypy" "_mypy" "teardown" "help" )
 
 # Entrypoint
 main() {
