@@ -114,38 +114,7 @@ export POSTGRES_USER=testuser
 export POSTGRES_PASSWORD=changeme
 ```
 
-### Run with Docker
-
-Ensure you have Docker installed ([install here](http://docs.docker.com/get-docker/)) and running on your machine.
-
-```bash
-docker info
-```
-
-See the `run` script for available commands.
-
-```bash
-# Start the server
-./run server
-```
-
-Other commands include:
-
-```bash
-./run
-
-Available commands:
-    dev -- Enter a shell with the dev environment set up
-    server -- Start the server
-    test -- Run tests
-    e2e -- Run end-to-end tests against local api
-    fmt -- Run black and ruff
-    mypy -- Run static type checker
-    teardown -- Teardown the Docker environment
-    help -- List all available commands
-```
-
-<!-- ### Run Locally
+### Run Locally
 
 ```bash
 brew install pyenv  # or update
@@ -154,11 +123,12 @@ pyenv virtualenv 3.10.12 realworld-flask
 pyenv activate realworld-flask
 pyenv local realworld-flask
 
-pip install -U poetry
+pip install -U poetry python-dotenv
 poetry install
-
-flask run --port 8080
-``` -->
+alembic upgrade head
+poetry run flask run --port 8080
+curl -X GET http://localhost:8080/api/tags
+```
 
 ### Sample Snippets
 
